@@ -258,6 +258,59 @@
       }
 
     
+    let startX, startY, distX, distY;
+
+    canvas.addEventListener('touchstart', function (e) {
+        // store the starting touch coordinates
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener('touchmove', function (e) {
+        // calculate the distance the touch has moved from the starting point
+        distX = e.touches[0].clientX - startX;
+        distY = e.touches[0].clientY - startY;
+
+        // if the distance moved horizontally is greater than the distance moved vertically, move the object left or right
+        if (Math.abs(distX) > Math.abs(distY)) {
+            if (distX < 0) {
+                // move the object left
+                const col = tetromino.col - 1;
+                if (isValidMove(tetromino.matrix, tetromino.row, col)) {
+                    tetromino.col = col;
+                }
+            } else {
+                // move the object right
+                const col = tetromino.col + 1;
+                if (isValidMove(tetromino.matrix, tetromino.row, col)) {
+                    tetromino.col = col;
+                }
+            }
+        }
+    });
+
+    canvas.addEventListener('touchend', function (e) {
+        // if the touch ended within a small distance of the starting point, rotate the object 90 degrees
+        if (Math.abs(distX) < 10 && Math.abs(distY) < 10) {
+            const matrix = rotate(tetromino.matrix);
+            if (isValidMove(matrix, tetromino.row, tetromino.col)) {
+                tetromino.matrix = matrix;
+            }
+        }
+
+        // if the touch ended with a downward swipe, accelerate the object down
+        if (distY > 50) {
+            const row = tetromino.row + 1;
+            if (!isValidMove(tetromino.matrix, row, tetromino.col)) {
+                tetromino.row = row - 1;
+                placeTetromino();
+                return;
+            }
+            tetromino.row = row;
+        }
+    });
+
+
 
     // главный цикл игры
     function loop() {
